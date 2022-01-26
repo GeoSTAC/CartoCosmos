@@ -95,7 +95,7 @@ export default L.Map.AstroMap = L.Map.extend({
     L.Map.prototype.initialize.call(this, this._mapDiv, this.options);
     this.loadLayerCollection("cylindrical");
 
-    this.loadFootprintLayer(target, 1);
+    this.loadFootprintLayer(target, 1, null);
 
     // Listen to baselayerchange event so that we can set the current layer being
     // viewed by the map.
@@ -122,8 +122,8 @@ export default L.Map.AstroMap = L.Map.extend({
    *
    * @param {Int} page - current selected page number of the pagination
    */
-  loadFootprintLayer: function(name, page) {
-    getItemCollection(name, page).then(result => {
+  loadFootprintLayer: function(name, page, bboxArr) {
+    getItemCollection(name, page, bboxArr).then(result => {
       if (result != undefined) {
         this._geoLayer = L.geoJSON().addTo(this);
         this._footprintCollection["Footprints"] = this._geoLayer;
@@ -132,12 +132,13 @@ export default L.Map.AstroMap = L.Map.extend({
             this._geoLayer.addData(result[i].features[j]);
           }
         }
-        this._footprintControl = L.control.layers(null, this._footprintCollection).addTo(this);
+        this._footprintControl = L.control
+          .layers(null, this._footprintCollection)
+          .addTo(this);
         this.addFootprintLegend(name, page);
       }
     });
   },
-
 
   /**
    * @function AstroMap.prototype.addFootprintLegend
@@ -151,28 +152,55 @@ export default L.Map.AstroMap = L.Map.extend({
     var self = this;
 
     var legend = L.control.htmllegend({
-      legends: [{
-          name: 'Footprints',
+      legends: [
+        {
+          name: "Footprints",
           layer: this._geoLayer,
-          elements: [{
+          elements: [
+            {
               html: `<div class="pagination">
                       <a id=footprint_left>&laquo;</a>
                       <a id=footprint_pageNumber>${page}</a>
                       <a id=footprint_right>&raquo;</a>
                     </div>`
-          }]
-        }]
-     });
+            }
+          ]
+        },
+        {
+          name: "bbox filter",
+          layer: this._geoLayer,
+          elements: [
+            {
+              html: `<div class="metadatafilter">
+                      <label for "lcca1">Lower left corner, coordinate axis 1</label>
+                      <input type="number" id="llcca1" >
+
+                      <label for "llcca2">Lower left corner, coordinate axis 2</label>
+                      <input type="number" id="llcca2" >
+
+                      <label for "urcca1">Upper right corner, coordinate axis 1</label>
+                      <input type="number" id="urcca1" >
+
+                      <label for "urcca2">Upper right corner, coordinate axis 2</label>
+                      <input type="number" id="urcca2" >
+
+                      <button id=bbox_search>Filter</button>
+                    </div>`
+            }
+          ]
+        }
+      ]
+    });
     this.addControl(legend);
 
-    $('#footprint_right').click(function () {
+    $("#footprint_right").click(function() {
       page = page + 1;
       self._footprintControl.remove();
       self._geoLayer.clearLayers();
       self.removeControl(legend);
       self.loadFootprintLayer(name, page);
     });
-    $('#footprint_left').click(function () {
+    $("#footprint_left").click(function() {
       page = page - 1;
       if (page > 0) {
         self._footprintControl.remove();
@@ -180,6 +208,20 @@ export default L.Map.AstroMap = L.Map.extend({
         self.removeControl(legend);
         self.loadFootprintLayer(name, page);
       }
+    });
+
+    $("#bbox_search").click(function() {
+      let bboxArr = [
+        parseFloat(document.getElementById("llcca1").value),
+        parseFloat(document.getElementById("llcca2").value),
+        parseFloat(document.getElementById("urcca1").value),
+        parseFloat(document.getElementById("urcca2").value)
+      ];
+      console.log(bboxArr);
+      self._footprintControl.remove();
+      self._geoLayer.clearLayers();
+      self.removeControl(legend);
+      self.loadFootprintLayer(name, null, bboxArr);
     });
   },
 
@@ -352,5 +394,13 @@ export default L.Map.AstroMap = L.Map.extend({
    */
   center: function() {
     return this.options.center;
+  },
+
+  searchMetaData: function() {
+    // take in query string
+    // call api with query string
+    // call load footprints with new set from api results
+    // output to user something?
   }
 });
+``;
