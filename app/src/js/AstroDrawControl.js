@@ -68,6 +68,7 @@ export default L.Control.AstroDrawControl = L.Control.Draw.extend({
     L.DomEvent.on(this.wktButton, "click", this.mapWKTString, this);
 
     map.on("draw:created", this.shapesToWKT, this);
+    // map.on("draw:created", L.Map.AstroMap.testing(), this);
 
     // map.on("projChange", this.reprojectFeature, this);
 
@@ -91,6 +92,31 @@ export default L.Control.AstroDrawControl = L.Control.Draw.extend({
 
     this.wkt.read(JSON.stringify(geoJson));
     this.wktTextBox.value = this.wkt.write();
+    this.shapesToFootprint(this.wktTextBox.value);
+  },
+
+  shapesToFootprint: function(coords) {
+    let strArr = coords
+      .slice(coords.indexOf("((") + 2, coords.indexOf("))"))
+      .split(",");
+    let bboxCoordArr = [];
+
+    for (let i = 0; i < 3; i++) {
+      if (i != 1) {
+        let temp = strArr[i].split(" ");
+        bboxCoordArr.push([parseFloat(temp[0]), parseFloat(temp[1])]);
+      }
+    }
+    let bboxArr = [
+      bboxCoordArr[0][0],
+      bboxCoordArr[0][1],
+      bboxCoordArr[1][0],
+      bboxCoordArr[1][1]
+    ];
+    this._map._footprintControl.remove();
+    this._map._geoLayer.clearLayers();
+    this._map.removeControl(this._map._htmllegend);
+    this._map.loadFootprintLayer(this._map._name, null, bboxArr);
   },
 
   /**

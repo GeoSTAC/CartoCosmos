@@ -26,9 +26,15 @@ function getItemCollection(name, page, bboxArr) {
             }
 
             if (bboxArr != null) {
-              url = url + "?bbox=[" + bboxArr + "]";
+              let tempStr = "";
+              for (let k = 0; k < bboxArr.length; k++) {
+                tempStr += bboxArr[k];
+                if (k != bboxArr.length - 1) {
+                  tempStr += ",";
+                }
+              }
+              url = url + "?bbox=" + "[" + tempStr + "]";
             }
-            console.log(url);
             urlArray.push(url);
           }
         }
