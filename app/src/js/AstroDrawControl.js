@@ -95,6 +95,13 @@ export default L.Control.AstroDrawControl = L.Control.Draw.extend({
     this.shapesToFootprint(this.wktTextBox.value);
   },
 
+  /**
+   * @function shapesToFootprint
+   * @description Is called when a user draws a shape using the on map drawing features.
+   *              Renders all footprints that intersect the drawn area.
+   *
+   * @param {String} coords - The drawn shape’s coordinates.
+   */
   shapesToFootprint: function(coords) {
     let strArr = coords
       .slice(coords.indexOf("((") + 2, coords.indexOf("))"))
@@ -107,6 +114,8 @@ export default L.Control.AstroDrawControl = L.Control.Draw.extend({
         bboxCoordArr.push([parseFloat(temp[0]), parseFloat(temp[1])]);
       }
     }
+    // will proballby end up refactoring this a little bit when the front end of
+    // this is up
     let bboxArr = [
       bboxCoordArr[0][0],
       bboxCoordArr[0][1],
@@ -116,7 +125,8 @@ export default L.Control.AstroDrawControl = L.Control.Draw.extend({
     this._map._footprintControl.remove();
     this._map._geoLayer.clearLayers();
     this._map.removeControl(this._map._htmllegend);
-    this._map.loadFootprintLayer(this._map._name, null, bboxArr);
+    let queryString = "?bbox=" + "[" + bboxArr + "]";
+    this._map.loadFootprintLayer(this._map._name, queryString);
   },
 
   /**
@@ -148,8 +158,4 @@ export default L.Control.AstroDrawControl = L.Control.Draw.extend({
 
     this.myLayer.addData(geojsonFeature);
   }
-
-  // reprojectFeature: function(e) {
-
-  // }
 });

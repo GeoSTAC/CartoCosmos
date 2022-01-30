@@ -4,7 +4,7 @@ function callAPI() {
   ).then(response => response.json());
 }
 
-function getItemCollection(name, page, bboxArr) {
+function getItemCollection(name, queryString) {
   var urlArray = [];
   return callAPI().then(result => {
     for (let i = 0; i < result.collections.length; i++) {
@@ -21,20 +21,7 @@ function getItemCollection(name, page, bboxArr) {
               "https://stac.astrogeology.usgs.gov/api/collections",
               "https://jat52qc8c0.execute-api.us-west-2.amazonaws.com/dev/collections"
             );
-            if (page != null) {
-              url = url + "?page=" + page;
-            }
-
-            if (bboxArr != null) {
-              let tempStr = "";
-              for (let k = 0; k < bboxArr.length; k++) {
-                tempStr += bboxArr[k];
-                if (k != bboxArr.length - 1) {
-                  tempStr += ",";
-                }
-              }
-              url = url + "?bbox=" + "[" + tempStr + "]";
-            }
+            url = url + queryString;
             urlArray.push(url);
           }
         }
