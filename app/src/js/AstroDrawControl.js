@@ -68,9 +68,6 @@ export default L.Control.AstroDrawControl = L.Control.Draw.extend({
     L.DomEvent.on(this.wktButton, "click", this.mapWKTString, this);
 
     map.on("draw:created", this.shapesToWKT, this);
-    // map.on("draw:created", L.Map.AstroMap.testing(), this);
-
-    // map.on("projChange", this.reprojectFeature, this);
 
     return container;
   },
