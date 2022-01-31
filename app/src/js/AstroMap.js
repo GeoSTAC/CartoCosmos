@@ -3,8 +3,9 @@ import "proj4leaflet";
 
 import AstroProj from "./AstroProj";
 import LayerCollection from "./LayerCollection";
-import { getItemCollection } from "./ApiJsonCollection";
+import { getItemCollection, url } from "./ApiJsonCollection";
 import { MY_JSON_MAPS } from "./layers";
+import "leaflet-html-legend";
 
 /**
  * @class AstroMap
@@ -44,6 +45,9 @@ export default L.Map.AstroMap = L.Map.extend({
       a: "",
       c: ""
     };
+    this._footprintCollection = {};
+    this._footprintControl = null;
+    this._geoLayer = null;
 
     // Set by layer collection or baselayerchange event
     this._currentLayer = null;
@@ -91,9 +95,7 @@ export default L.Map.AstroMap = L.Map.extend({
     L.Map.prototype.initialize.call(this, this._mapDiv, this.options);
     this.loadLayerCollection("cylindrical");
 
-    if(target == "Mars" || target == "Europa") {
-      this.loadFootprintLayer(target);
-    }
+    this.loadFootprintLayer(target, 1);
 
     // Listen to baselayerchange event so that we can set the current layer being
     // viewed by the map.
@@ -116,22 +118,69 @@ export default L.Map.AstroMap = L.Map.extend({
    * @function AstroMap.prototype.loadFootprintLayer
    * @description Adds the ApiJsonCollection with the requested name.
    *
-   * @param {String} name - Name of the STAC Catalog. example "ctx_dtms"
+   * @param {String} name - Name of the target
+   *
+   * @param {Int} page - current selected page number of the pagination
    */
-  loadFootprintLayer: function(name) {
-    var footprintLayer = L.geoJSON().addTo(this);
-
-    getItemCollection(name).then(result => {
-        console.log("STAC Item Collection: ");
-        console.log(result);
-          for (let i = 0; i < result.links.length; i++) {
-            if (result.links[i].rel == 'item') {
-              fetch(result.links[i].href)
-                .then(response => response.json())
-                .then(data => footprintLayer.addData(data))
-            }
+  loadFootprintLayer: function(name, page) {
+    getItemCollection(name, page).then(result => {
+      if (result != undefined) {
+        this._geoLayer = L.geoJSON().addTo(this);
+        this._footprintCollection["Footprints"] = this._geoLayer;
+        for (let i = 0; i < result.length; i++) {
+          for (let j = 0; j < result[i].features.length; j++) {
+            this._geoLayer.addData(result[i].features[j]);
           }
-      });
+        }
+        this._footprintControl = L.control.layers(null, this._footprintCollection).addTo(this);
+        this.addFootprintLegend(name, page);
+      }
+    });
+  },
+
+
+  /**
+   * @function AstroMap.prototype.addFootprintLegend
+   * @description Adds legend for each footprint layer
+   *
+   * @param {String} name - Name of the projection
+   *
+   * @param {Int} page - current selected page number of the pagination
+   */
+  addFootprintLegend: function(name, page) {
+    var self = this;
+
+    var legend = L.control.htmllegend({
+      legends: [{
+          name: 'Footprints',
+          layer: this._geoLayer,
+          elements: [{
+              html: `<div class="pagination">
+                      <a id=footprint_left>&laquo;</a>
+                      <a id=footprint_pageNumber>${page}</a>
+                      <a id=footprint_right>&raquo;</a>
+                    </div>`
+          }]
+        }]
+     });
+    this.addControl(legend);
+
+    $('#footprint_right').click(function () {
+      page = page + 1;
+      self._footprintControl.remove();
+      self._geoLayer.clearLayers();
+      self.removeControl(legend);
+      self.loadFootprintLayer(name, page);
+    });
+    $('#footprint_left').click(function () {
+      page = page - 1;
+      if (page > 0) {
+        self._footprintControl.remove();
+        self._geoLayer.clearLayers();
+        self.removeControl(legend);
+        self.loadFootprintLayer(name, page);
+      }
+    });
   },
 
   /**

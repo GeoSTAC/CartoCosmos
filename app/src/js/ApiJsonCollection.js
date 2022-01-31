@@ -1,74 +1,40 @@
 
 function callAPI() {
-    return fetch("http://asc-stacbrowser.s3-website-us-west-2.amazonaws.com/catalog.json")
+    return fetch("https://stac.astrogeology.usgs.gov/api/collections")
            .then(response => response.json());
 }
 
-
-function getStacTargetCatalog(name) {
-  if (name == "Mars") {
-    return callAPI().then(result => {
-      console.log("STAC Catalog for USGS: ");
-      console.log(result);
-      for (let i = 0; i < result.links.length; i++) {
-        if (result.links[i].title == 'Mars Analysis Ready Data') {
-          return fetch(result.links[i].href)
-            .then(response => response.json())
-        }
-      }
-    });
-  }
-  if (name == "Europa") {
-    return callAPI().then(result => {
-      console.log("STAC Catalog for USGS: ");
-      console.log(result);
-      for (let i = 0; i < result.links.length; i++) {
-        if (result.links[i].title == 'Jupiter Analysis Ready Data') {
-          return fetch(result.links[i].href)
-            .then(response => response.json())
-        }
-      }
-    });
-  }
-}
-
-
-function getStacMissionCatalogs(name) {
-  return getStacTargetCatalog(name).then(result => {
-    console.log("STAC Catalog(s) for Specific Target: ");
-    console.log(result);
-    for (let i = 0; i < result.links.length; i++) {
-      if(result.links[i].rel == 'child'){
-        return fetch(result.links[i].href)
-          .then(response => response.json())
-      }
-    }
-  });
-}
-
-function getItemCollection(name) {
-  // ctx_dtms skips a step in which there is no mission catalog instead it
-  // takes you straight to the collection from the target catalog
-  if (name == "Mars"){
-    return getStacTargetCatalog(name).then(result => {
-      console.log("STAC Catalog(s) for Specific Target: ");
-      console.log(result);
-      for (let i = 0; i < result.links.length; i++) {
-        if(result.links[i].rel == 'child'){
-          return fetch(result.links[i].href)
-            .then(response => response.json())
-        }
-      }
-    });
-  }
-  if (name == "Europa") {
-    return getStacMissionCatalogs(name).then(result => {
-      console.log("STAC Collection for Specific Mission: ");
-      console.log(result);
-      return fetch(result.links[3].href)
-        .then(response => response.json())
-    })
-  }
-}
+function getItemCollection(name, page) {
+  var urlArray = [];
+  return callAPI().then(result => {
+    for (let i = 0; i < result.collections.length; i++) {
+      if (result.collections[i].summaries["ssys:targets"] == name.toLowerCase()) {
+        let length = result.collections[i].links.length;
+        for (let j = 0; j < length; j++) {
+          let link = result.collections[i].links[j];
+          if (link.rel == 'items') {
+            var url = result.collections[i].links[j].href;
+            // this is temporary until stac.astrogeology is working with pagination
+            url = url.replace("https://stac.astrogeology.usgs.gov/api/collections", "https://jat52qc8c0.execute-api.us-west-2.amazonaws.com/dev/collections");
+            url = url + "?page=" + page;
+            urlArray.push(url);
+          }
+         }
+       }
+     }
+     if (urlArray.length == 0) {
+       return;
+     }
+     let promiseArray = [];
+     for (let i = 0; i < urlArray.length; i++) {
+       promiseArray.push(fetch(urlArray[i]));
+     }
+     return Promise.all(promiseArray).then(function (responses) {
+        return Promise.all(responses.map(function (response) {
+	           return response.json();
+        }));
+      });
+   })
+ }
 
 export{ getItemCollection };

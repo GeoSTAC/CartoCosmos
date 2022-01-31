@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Component } from "react";
 import Paper from "@material-ui/core/Paper";
 import { makeStyles } from "@material-ui/core/styles";
 import FormControl from "@material-ui/core/FormControl";
@@ -11,11 +11,21 @@ import MapContainer from "./MapContainer.jsx";
 import ListSubheader from "@material-ui/core/ListSubheader";
 import WellKnownTextInput from "../presentational/WellKnownTextInput.jsx";
 import CreditsDisplay from "../presentational/CreditsDisplay.jsx";
+import SearchAndFilterInput from "../presentational/SearchAndFilterInput.jsx";
+import AdapterDateFns from '@mui/lab/AdapterDateFns';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
 
 /**
  * Controls css styling for this component using js to css
  */
 const useStyles = makeStyles(theme => ({
+  appPaper: {
+    display: "flex",
+    flexDirection: "row"
+  },
+  rightSidebar: {
+    border: `1px solid ${theme.palette.divider}`
+  },
   container: {
     display: "flex",
     alignContent: "center",
@@ -47,6 +57,13 @@ export default function App() {
   const handleChange = event => {
     setTargetPlanet(event.target.value);
   };
+
+  window.addEventListener("DOMContentLoaded", () => {
+    var map = new L.map('geoTIFF-map').setView([51.505, -0.09], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+  });
 
   return (
     <div>
@@ -93,12 +110,20 @@ export default function App() {
         </FormControl>
         {/* <AutoCompleteInput className={classes.autoComplete} /> */}
       </div>
-      <Paper elevation={10}>
-        <ConsoleContainer target={targetPlanet} />
-        <MapContainer target={targetPlanet} />
-        <WellKnownTextInput />
-        <CreditsDisplay />
+      <Paper elevation={10} className={classes.appPaper}>
+        <div>
+          <ConsoleContainer target={targetPlanet} />
+          <MapContainer target={targetPlanet} />
+          <WellKnownTextInput />
+          <CreditsDisplay />
+        </div>
+        <div className={classes.rightSidebar}>
+          <SearchAndFilterInput />
+        </div>
       </Paper>
+      <div>
+        <div id="geoTIFF-map"/>
+      </div>
     </div>
   );
 }
