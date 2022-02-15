@@ -7,7 +7,6 @@ export default class GeoTiffViewer{
 		this._imageDiv = image_div;
 		this._currentIndex = 0;
 		this._currentSize = 0;
-		this.addPhotoToGallary("https://asc-mars.s3.us-west-2.amazonaws.com/ctx_dtms/B01_009860_1804_XN_00N195W__F18_042892_1802_XN_00N195W/B01_009860_1804_XN_00N195W__F18_042892_1802_XN_00N195W_DEM.jpg");
 		
 	}
 
