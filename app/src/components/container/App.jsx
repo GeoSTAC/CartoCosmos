@@ -1,42 +1,28 @@
-import React, { Component } from "react";
-import Paper from "@material-ui/core/Paper";
-import { makeStyles } from "@material-ui/core/styles";
-import FormControl from "@material-ui/core/FormControl";
-import InputLabel from "@material-ui/core/InputLabel";
-import Input from "@material-ui/core/Input";
-import MenuItem from "@material-ui/core/MenuItem";
-import Select from "@material-ui/core/Select";
-import ConsoleContainer from "./ConsoleContainer.jsx";
+import React from "react";
+import ConsoleAppBar from "../presentational/ConsoleAppBar.jsx";
 import MapContainer from "./MapContainer.jsx";
-import ListSubheader from "@material-ui/core/ListSubheader";
-import WellKnownTextInput from "../presentational/WellKnownTextInput.jsx";
+import QueryConsole from "../presentational/QueryConsole.jsx";
 import CreditsDisplay from "../presentational/CreditsDisplay.jsx";
 import SearchAndFilterInput from "../presentational/SearchAndFilterInput.jsx";
-import AdapterDateFns from '@mui/lab/AdapterDateFns';
-import LocalizationProvider from '@mui/lab/LocalizationProvider';
+import { makeStyles } from "@material-ui/core/styles";
+import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Toolbar from '@mui/material/Toolbar';
+import Button from '@mui/material/Button';
+import "../../styles.css";
+import GeoTiffViewer from "../../js/GeoTiffViewer.js";
+import GeoTIFFAppBar from "../presentational/GeoTIFFAppBar.jsx";
 
-/**
- * Controls css styling for this component using js to css
- */
 const useStyles = makeStyles(theme => ({
-  appPaper: {
-    display: "flex",
-    flexDirection: "row"
+  shown: {
+    display: "block",
+    background: "#f8f9fa"
   },
-  rightSidebar: {
-    border: `1px solid ${theme.palette.divider}`
-  },
-  container: {
-    display: "flex",
-    alignContent: "center",
-    justifyContent: "space-between"
-  },
-  formControl: {
-    margin: theme.spacing(1),
-    minWidth: 125
-  },
-  autoComplete: {}
-}));
+  hidden: {
+    display: "none"
+  }
+}))
 
 /**
  * App is the parent component for all of the other components in the project. It
@@ -47,82 +33,67 @@ const useStyles = makeStyles(theme => ({
  */
 export default function App() {
   const classes = useStyles();
-  const [targetPlanet, setTargetPlanet] = React.useState("Mercury");
+  const [targetPlanet, setTargetPlanet] = React.useState("Mars");
+  const [showSortBar, setShowSortBar] = React.useState(true);
+  const [sortBarStyle, setSortBarStyle] = React.useState(classes.hidden);
+  const geoTiffViewer = new GeoTiffViewer();
+
+  const ShowHideSort = () => {
+    setShowSortBar(!showSortBar);
+    setSortBarStyle(showSortBar ? classes.shown : classes.hidden);
+  }
 
   /**
-   * Handles target selection
-   *
-   * @param {*} event selection event
+   * Handles target body selection
+   * @param {*} value selection event
    */
-  const handleChange = event => {
-    setTargetPlanet(event.target.value);
+  const handleTargetBodyChange = value => {
+    setTargetPlanet(value);
   };
 
-  window.addEventListener("DOMContentLoaded", () => {
-    var map = new L.map('geoTIFF-map').setView([51.505, -0.09], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  }).addTo(map);
-  });
-
   return (
-    <div>
-      <div className={classes.container}>
-        <FormControl className={classes.formControl}>
-          <InputLabel htmlFor="grouped-select">Target Body</InputLabel>
-          <Select
-            defaultValue={1}
-            onChange={handleChange}
-            value={targetPlanet}
-            input={<Input id="grouped-select" />}
-          >
-            <ListSubheader value="Mercury">Planets</ListSubheader>
-            <MenuItem value="Mercury">Mercury</MenuItem>
-            <MenuItem value="Venus">Venus</MenuItem>
-            <MenuItem value="Earth">Earth</MenuItem>
-            <MenuItem value="Mars">Mars</MenuItem>
-            <MenuItem value="Jupiter">Jupiter</MenuItem>
-            <MenuItem value="Saturn">Saturn</MenuItem>
-            <MenuItem value="Uranus">Uranus</MenuItem>
-            <MenuItem value="Neptune">Neptune</MenuItem>
-            <MenuItem value="Pluto">Pluto (yeah, a planet)</MenuItem>
-            <ListSubheader value="Moon">Moons and Other Bodies</ListSubheader>
-            <MenuItem value="Moon">Moon</MenuItem>
-            <MenuItem value="Ceres">Ceres</MenuItem>
-            <MenuItem value="Mimas">Mimas</MenuItem>
-            <MenuItem value="Titan">Titan</MenuItem>
-            <MenuItem value="Deimos">Deimos</MenuItem>
-            <MenuItem value="Tethys">Tethys</MenuItem>
-            <MenuItem value="Phoebe">Phoebe</MenuItem>
-            <MenuItem value="Iapetus">Iapetus</MenuItem>
-            <MenuItem value="Dione">Dione</MenuItem>
-            <MenuItem value="Enceladus">Enceladus</MenuItem>
-            <MenuItem value="Hyperion">Hyperion</MenuItem>
-            <MenuItem value="Io">Io</MenuItem>
-            <MenuItem value="Callisto">Callisto</MenuItem>
-            <MenuItem value="Europa">Europa</MenuItem>
-            <MenuItem value="Ganymede">Ganymede</MenuItem>
-            <MenuItem value="Rhea">Rhea</MenuItem>
-            <MenuItem value="Phobos">Phobos</MenuItem>
-            <MenuItem value="Vesta">Vesta</MenuItem>
-            <MenuItem value="Charon">Charon</MenuItem>
-          </Select>
-        </FormControl>
-        {/* <AutoCompleteInput className={classes.autoComplete} /> */}
-      </div>
-      <Paper elevation={10} className={classes.appPaper}>
-        <div>
-          <ConsoleContainer target={targetPlanet} />
-          <MapContainer target={targetPlanet} />
-          <WellKnownTextInput />
+    <div id="app-container">
+      <div id="main-column">
+        <div id="top-bar">
+          <ConsoleAppBar target={targetPlanet} bodyChange={handleTargetBodyChange}  />
+        </div>
+        <MapContainer target={targetPlanet} />
+        <div id="bottom-bar">
+          <QueryConsole />
           <CreditsDisplay />
         </div>
-        <div className={classes.rightSidebar}>
-          <SearchAndFilterInput />
+      </div>
+      <div id="right-bar">  
+        <div id="sort-filter-collapsed" onClick={ShowHideSort} >
+          <ArrowLeftIcon/>
+          Sort and Filter
+          <ArrowLeftIcon/>
         </div>
-      </Paper>
-      <div>
-        <div id="geoTIFF-map"/>
+          <div className={sortBarStyle}>
+            <SearchAndFilterInput target={targetPlanet}/>
+            {/* instead of styled surrounding div: { showSortBar ? <SearchAndFilterInput /> : null } 
+                ^ simpler but might break things if another part of the program is looking for it and it's not there? */}
+          </div> 
+          <br></br>
+      <br></br>
+      <div id = "geoTiffContainer" >
+        <GeoTIFFAppBar />
+        <div id="geoTiffImageDiv">
+          <img id="geoTiffImage" src="" width="auto" height="700px"></img>
+        </div>
+        <Box sx={{ flexGrow: 1, background: "#f8f9fa", color:"#f8f9fa" }}>
+          <AppBar position="static" sx={{ flexGrow: 1, background: "black", color:"#f8f9fa" }}>
+            <Toolbar sx={{ flexGrow: 1, background: "black", color:"#f8f9fa" }}>
+              <a 
+              href="https://www.stacindex.org/catalogs/usgs-astrogeology-ard#/item/3q52Dkr5nBe3g684y9fzjwTFMjyyQ66QitBuDrNggEBLhzMJFUvkYYXvSppyx71tvJpVWQkxLgEHK/EfcLDDAkyqgqdedCsXSnoX9MeZsck2rgn9VSh6qcU6NKm3JW8iTFYVyMD4rN7aVHyoShQDyiNMKS7tH9RZyb2DCamgnJ9/4Ua8RY2czjpMAi8zD1iqiZQznkdFkpsgn1zW31rg1cTxirHqoh6TnBwts2y791MDR8YLLUGngx5tbyUChysEiZ72or8CU1WxfF9YH7V88c5R4NMXqDdUKqzSi7yQU4XeXdYz15ZrRG9hGWYTkAfG2Nezj9AAcUv6qX6zyBm3xD2yvtrKTXobVCpsUNQjBXzZxFFUKhG4hYt6wU8ur53XnKVQC578zs8wUm4Mu4V9bB?si=0&t=2#9/0.455928/164.745483" 
+              id="stacAsset"> 
+              <h2>Assest Collection </h2> </a>
+              <Button id = "closeButton" onClick={geoTiffViewer.closeViewer}>CLOSE</Button>
+            </Toolbar>
+          </AppBar>
+        </Box>
+
+      </div>
       </div>
     </div>
   );

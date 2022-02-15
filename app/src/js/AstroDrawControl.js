@@ -1,6 +1,7 @@
 import L from "leaflet";
 import "leaflet-draw";
 import Wkt from "wicket";
+import {getCurrentPage} from "./ApiJsonCollection";
 
 /**
  * @class AstroDrawControl
@@ -60,12 +61,31 @@ export default L.Control.AstroDrawControl = L.Control.Draw.extend({
       }
     }
 
-    this.wktTextBox = L.DomUtil.get("wktTextBox");
+    this.queryTextBox = L.DomUtil.get("query-textarea");
+    this.queryAuto = L.DomUtil.get("query-auto-checkbox");
+    this.queryAutoWkt = L.DomUtil.get("query-auto-wkt-checkbox");
+    // TODO: STAC Query should auto-populate/set this.queryTextBox.value
+    //       if (this.queryAuto.checked === true && this.queryAutoWkt.checked === false)
+
     this.wkt = new Wkt.Wkt();
     this.myLayer = L.Proj.geoJson().addTo(map);
 
     this.wktButton = L.DomUtil.get("wktButton");
     L.DomEvent.on(this.wktButton, "click", this.mapWKTString, this);
+
+    L.DomEvent.on(
+      L.DomUtil.get("applyButton"),
+      "click",
+      this.applyFilter,
+      this
+    );
+    L.DomEvent.on(L.DomUtil.get("clearButton"), "click", this.clearMap, this);
+
+    this.valueSlider = L.DomUtil.get("valueSlider")
+    L.DomEvent.on(this.valueSlider, "click", this.applyLimit, this);
+
+    this.pagination = L.DomUtil.get("pagination")
+    L.DomEvent.on(this.pagination, "click", this.applyPage, this);
 
     map.on("draw:created", this.shapesToWKT, this);
 
@@ -90,7 +110,144 @@ export default L.Control.AstroDrawControl = L.Control.Draw.extend({
     geoJson = geoJson["geometry"];
 
     this.wkt.read(JSON.stringify(geoJson));
-    this.wktTextBox.value = this.wkt.write();
+    if (this.queryAuto.checked === true && this.queryAutoWkt.checked === true) {
+      this.queryTextBox.value = this.wkt.write();
+    }
+  },
+
+  clearMap: function() {
+    this._map._footprintControl.remove();
+    for(let i = 0; i < this._map._geoLayers.length; i++){
+      this._map._geoLayers[i].clearLayers();
+    }
+  },
+
+
+  applyLimit: function() {
+    this._map._footprintControl.remove();
+
+    for(let i = 0; i < this._map._geoLayers.length; i++){
+      this._map._geoLayers[i].clearLayers();
+    }
+    let currentPage = getCurrentPage();
+
+    let sliderElement = L.DomUtil.get("valueSlider");
+    let limitVal = sliderElement.lastChild.firstChild.value;
+
+    let queryString = "?page=" + currentPage;
+    queryString += "&limit=" + limitVal;
+
+    this._map.loadFootprintLayer(this._map._target, queryString);
+  },
+
+
+
+  applyPage: function() {
+    this._map._footprintControl.remove();
+
+    for(let i = 0; i < this._map._geoLayers.length; i++){
+      this._map._geoLayers[i].clearLayers();
+    }
+    let currentPage = getCurrentPage();
+
+    let sliderElement = L.DomUtil.get("valueSlider");
+    let limitVal = sliderElement.lastChild.firstChild.value;
+
+    let queryString = "?page=" + currentPage;
+    queryString += "&limit=" + limitVal;
+
+    this._map.loadFootprintLayer(this._map._target, queryString);
+  },
+
+
+  /**
+   * @function shapesToFootprint
+   * @description Is called when a user draws a shape using the on map drawing features.
+   *              Renders all footprints that intersect the drawn area.
+   *
+   * @param {String} coords - The drawn shape’s coordinates.
+   */
+  shapesToFootprint: function(coords) {
+    let strArr = coords
+      .slice(coords.indexOf("((") + 2, coords.indexOf("))"))
+      .split(",");
+    let bboxCoordArr = [];
+
+    for (let i = 0; i < 3; i++) {
+      if (i != 1) {
+        let temp = strArr[i].split(" ");
+        bboxCoordArr.push([parseFloat(temp[0]), parseFloat(temp[1])]);
+      }
+    }
+    // will proballby end up refactoring this a little bit when the front end of
+    // this is up
+    let bboxArr = [
+      bboxCoordArr[0][0],
+      bboxCoordArr[0][1],
+      bboxCoordArr[1][0],
+      bboxCoordArr[1][1]
+    ];
+    let queryString = "bbox=" + "[" + bboxArr + "]";
+    return queryString;
+  },
+
+  applyFilter: function() {
+    let filterOptions = [];
+
+    if (L.DomUtil.get("dateCheckBox").checked == true) {
+      let fromDate = L.DomUtil.get("dateFromID").value;
+      let toDate = L.DomUtil.get("dateToID").value;
+      fromDate = fromDate.split("/");
+      toDate = toDate.split("/");
+
+      let newFromDate = "";
+      newFromDate = newFromDate.concat(
+        fromDate[2],
+        "-",
+        fromDate[0],
+        "-",
+        fromDate[1],
+        "T00:00:00Z"
+      );
+
+      let newToDate = "";
+      newToDate = newToDate.concat(
+        toDate[2],
+        "-",
+        toDate[0],
+        "-",
+        toDate[1],
+        "T23:59:59Z"
+      );
+
+      let timeQuery = "".concat("datetime=", newFromDate, "/", newToDate);
+      filterOptions.push(timeQuery);
+    }
+
+    if (L.DomUtil.get("keywordCheckBox").checked == true) {
+      filterOptions.push(L.DomUtil.get("keywordTextBox").value);
+    }
+
+    if (L.DomUtil.get("areaCheckBox").checked == true) {
+      let bboxValue = this.shapesToFootprint(this.wktTextBox.value);
+      filterOptions.push(bboxValue);
+    }
+
+    let queryString = "";
+
+    for (let i = 0; i < filterOptions.length; i++) {
+      if (queryString == "") {
+        queryString = queryString.concat("?", filterOptions[i]);
+      } else {
+        queryString = queryString.concat("&", filterOptions[i]);
+      }
+    }
+    // re render map
+    this._map._footprintControl.remove();
+    for(let i = 0; i < this._map._geoLayers.length; i++){
+      this._map._geoLayers[i].clearLayers();
+    }
+    this._map.loadFootprintLayer(this._map._target, queryString);
   },
 
   /**
@@ -104,7 +261,7 @@ export default L.Control.AstroDrawControl = L.Control.Draw.extend({
     this.myLayer.clearLayers();
     this.options.edit["featureGroup"].clearLayers();
 
-    let wktValue = this.wktTextBox.value;
+    let wktValue = this.queryTextBox.value;
 
     try {
       this.wkt.read(wktValue);
@@ -122,8 +279,4 @@ export default L.Control.AstroDrawControl = L.Control.Draw.extend({
 
     this.myLayer.addData(geojsonFeature);
   }
-
-  // reprojectFeature: function(e) {
-
-  // }
 });
