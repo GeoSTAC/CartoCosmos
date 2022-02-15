@@ -1,6 +1,11 @@
 
 export default class GeoTiffViewer{
 	
+	/**
+	 * @function GeoTiffViewer.constructor
+	 * @description Create the geoTiff Viewer using a given div inside the app
+	 * @parm {String} [image_div - Name of the GeoTiffViewer div
+	 * */
 	constructor(image_div){
 		this._imageArray = new Array();
 		this._assetArray;
@@ -11,11 +16,12 @@ export default class GeoTiffViewer{
 	}
 
 	/**
-	 * Displays the given array in the app
-	 * Takes in the imageURL and then fetches the url from 
-	 * the STAC sever to display to the user
+	 * @function GeoTiffViewer.addPhotoToGallery
+	 * @description Gets passed a link of an image and then
+	 * 		displays it the user off to the side of the CartoCosmos map
+	 * @parm {String} [imageURL - Url address of the given image
 	 * */
-	addPhotoToGallary(imageURL){
+	addPhotoToGallery(imageURL){
 
 		;(async function() {
 			const response = await fetch(imageURL)
@@ -37,7 +43,9 @@ export default class GeoTiffViewer{
 
 
 	/**
-	 * Closes and opens the photo viewer
+	 * @function GeoTiffViewer.closeViewer
+	 * @description Closes the viewer by changing the div from block to non,
+	 * 		can be used to display the div as well.
 	 * */
 	closeViewer(){
 		var x = document.getElementById("geoTiffContainer");
@@ -50,11 +58,4 @@ export default class GeoTiffViewer{
 	}
 
 
-	/**
-	 * The link that will take the user to the asset catalogue page
-	 * in the stac server
-	 * */ 
-	updateURL(){
-
-	}
 }
