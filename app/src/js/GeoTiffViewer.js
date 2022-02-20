@@ -4,24 +4,24 @@ export default class GeoTiffViewer{
 	/**
 	 * @function GeoTiffViewer.constructor
 	 * @description Create the geoTiff Viewer using a given div inside the app
-	 * @parm {String} [image_div - Name of the GeoTiffViewer div
+	 * @parm {String} [imageDiv - Name of the GeoTiffViewer div
 	 * */
-	constructor(image_div){
+	constructor(imageDiv){
 		this._imageArray = new Array();
 		this._assetArray;
-		this._imageDiv = image_div;
+		this._imageDiv = imageDiv;
 		this._currentIndex = 0;
 		this._currentSize = 0;
 		
 	}
 
 	/**
-	 * @function GeoTiffViewer.addPhotoToGallery
+	 * @function GeoTiffViewer.displayGeoTiff
 	 * @description Gets passed a link of an image and then
 	 * 		displays it the user off to the side of the CartoCosmos map
 	 * @parm {String} [imageURL - Url address of the given image
 	 * */
-	addPhotoToGallery(imageURL){
+	displayGeoTiff(imageURL){
 
 		;(async function() {
 			const response = await fetch(imageURL)
@@ -43,11 +43,11 @@ export default class GeoTiffViewer{
 
 
 	/**
-	 * @function GeoTiffViewer.closeViewer
+	 * @function GeoTiffViewer.toggleViewer
 	 * @description Closes the viewer by changing the div from block to non,
 	 * 		can be used to display the div as well.
 	 * */
-	closeViewer(){
+	toggleViewer(){
 		var x = document.getElementById("geoTiffContainer");
   		if (x.style.display === "none") {
     		x.style.display = "block";

@@ -87,7 +87,7 @@ export default function App() {
               <a 
               href="https://www.stacindex.org/catalogs/usgs-astrogeology-ard#/item/3q52Dkr5nBe3g684y9fzjwTFMjyyQ66QitBuDrNggEBLhzMJFUvkYYXvSppyx71tvJpVWQkxLgEHK/EfcLDDAkyqgqdedCsXSnoX9MeZsck2rgn9VSh6qcU6NKm3JW8iTFYVyMD4rN7aVHyoShQDyiNMKS7tH9RZyb2DCamgnJ9/4Ua8RY2czjpMAi8zD1iqiZQznkdFkpsgn1zW31rg1cTxirHqoh6TnBwts2y791MDR8YLLUGngx5tbyUChysEiZ72or8CU1WxfF9YH7V88c5R4NMXqDdUKqzSi7yQU4XeXdYz15ZrRG9hGWYTkAfG2Nezj9AAcUv6qX6zyBm3xD2yvtrKTXobVCpsUNQjBXzZxFFUKhG4hYt6wU8ur53XnKVQC578zs8wUm4Mu4V9bB?si=0&t=2#9/0.455928/164.745483" 
               id="stacAsset"> 
-              <h2>Assest Collection </h2> </a>
+              <h2>Download Asset </h2> </a>
               <Button id = "closeButton" onClick={geoTiffViewer.closeViewer}>CLOSE</Button>
             </Toolbar>
           </AppBar>
