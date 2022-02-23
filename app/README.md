@@ -3,8 +3,14 @@
 Repository for the CartoCosmos Capstone Team.
 
 ### Building and running on localhost
+#
 
-##### First install dependencies:
+Install conda:
+* [Windows](https://docs.conda.io/projects/conda/en/latest/user-guide/install/windows.html) 
+* [Mac](https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html)
+* [Linux](https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html)
+
+
 
 ```sh
 npm install
