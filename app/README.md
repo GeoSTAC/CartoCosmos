@@ -10,7 +10,29 @@ Install conda:
 * [Mac](https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html)
 * [Linux](https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html)
 
+Clone repository
+```sh
+git clone https://github.com/GeoSTAC/CartoCosmos-with-STAC.git
+```
 
+Once the repository is cloned ```cd``` in to the ```app folder```
+ie :
+```sh
+cd cloned_location/GeoSTAC/CartoCosmos/app
+```
+To setup the conda environment run the following command. 
+
+```sh
+conda env create -f environment.yml
+``` 
+
+Once the conda environment is created run the following command to activate it.
+
+```sh
+conda activate GeoSTAC
+```
+
+Then to install the project run
 
 ```sh
 npm install
