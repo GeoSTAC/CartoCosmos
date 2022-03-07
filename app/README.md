@@ -4,6 +4,7 @@ Repository for the CartoCosmos Capstone Team.
 
 ### Building and running on localhost
 #
+<<<<<<< HEAD
 
 Install conda:
 * [Windows](https://docs.conda.io/projects/conda/en/latest/user-guide/install/windows.html) 
@@ -33,6 +34,15 @@ conda activate GeoSTAC
 ```
 
 Then to install the project run
+=======
+
+Install conda:
+* [Windows](https://docs.conda.io/projects/conda/en/latest/user-guide/install/windows.html) 
+* [Mac](https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html)
+* [Linux](https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html)
+
+
+>>>>>>> d0188a57098197beb8212848ceb100963512413f
 
 ```sh
 npm install
