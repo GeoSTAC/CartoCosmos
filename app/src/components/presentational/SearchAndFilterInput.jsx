@@ -135,7 +135,7 @@ export default function SearchAndFilterInput(props) {
       setNumberReturned(getNumberReturned);
       setMaxNumberFootprints(getNumberMatched);
       props.footprintNavClick();
-    }, 1000);
+    }, 3000);
     setApplyChipVisStyle(css.chipHidden);
   }
 
